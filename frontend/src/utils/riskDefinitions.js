@@ -1,0 +1,18 @@
+export const RISK_DEFINITIONS = {
+  RESET_PASSWORD:            { level: 'medium', label: 'Redefinir senha',                   confirmWord: 'CONFIRMAR' },
+  BLOCK_USER:                { level: 'medium', label: 'Bloquear usuário',                  confirmWord: 'BLOQUEAR' },
+  DELETE_MFA_METHOD:         { level: 'high',   label: 'Remover método MFA',                confirmWord: 'REMOVER MFA',       requireReason: true },
+  REVOKE_SESSIONS:           { level: 'high',   label: 'Revogar todas as sessões',           confirmWord: 'REVOGAR',           requireReason: true },
+  CREATE_M365_USER:          { level: 'medium', label: 'Criar usuário M365',                confirmWord: 'CRIAR' },
+  REMOVE_LICENSE:            { level: 'high',   label: 'Remover licença',                   confirmWord: 'REMOVER',           requireReason: true },
+  ASSIGN_LICENSE:            { level: 'medium', label: 'Atribuir licença',                  confirmWord: 'CONFIRMAR' },
+  REMOVE_GROUP_MEMBER:       { level: 'medium', label: 'Remover membro do grupo',           confirmWord: 'REMOVER' },
+  REMOVE_SITE_PERMISSION:    { level: 'high',   label: 'Remover permissão de site',         confirmWord: 'REMOVER',           requireReason: true },
+  REMOVE_FOLDER_PERMISSION:  { level: 'medium', label: 'Remover permissão de pasta',        confirmWord: 'REMOVER' },
+  ADD_SITE_MEMBER:           { level: 'medium', label: 'Adicionar membro ao site',          confirmWord: 'CONFIRMAR' },
+  REMOVE_MAILBOX_PERMISSION: { level: 'high',   label: 'Remover permissão de caixa',        confirmWord: 'REMOVER',           requireReason: true },
+  ADD_MAILBOX_PERMISSION:    { level: 'medium', label: 'Adicionar delegação de caixa',      confirmWord: 'CONFIRMAR' },
+  CREATE_SHARED_MAILBOX:     { level: 'medium', label: 'Criar caixa compartilhada',         confirmWord: 'CRIAR' },
+  DELETE_TENANT:             { level: 'critical', label: 'Excluir instância',               confirmWord: 'EXCLUIR INSTÂNCIA', requireReason: true },
+  DELETE_USER:               { level: 'high',   label: 'Excluir usuário do sistema',        confirmWord: 'EXCLUIR',           requireReason: true },
+};
