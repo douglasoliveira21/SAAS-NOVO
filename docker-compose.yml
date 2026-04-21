@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_DB: m365_manager
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: "Vsi@#$3303Vsi"
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -29,7 +29,7 @@ services:
       DB_PORT: 5432
       DB_NAME: m365_manager
       DB_USER: postgres
-      DB_PASSWORD: "Vsi@#$3303Vsi"
+      DB_PASSWORD: ${DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRES_IN: 1h
       ENCRYPTION_KEY: ${ENCRYPTION_KEY}
