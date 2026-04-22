@@ -457,8 +457,47 @@ async function getSiteDetails(tenantId, siteId) {
   };
 }
 
+async function getAppOnlyToken(tenantId) {
+  const tenantResult = await pool.query('SELECT tenant_id FROM tenants WHERE id = $1', [tenantId]);
+  const msTenantId = tenantResult.rows[0]?.tenant_id;
+  if (!msTenantId) throw new Error('Tenant não encontrado');
+
+  const params = new URLSearchParams({
+    grant_type: 'client_credentials',
+    client_id: process.env.AZURE_CLIENT_ID,
+    client_secret: process.env.AZURE_CLIENT_SECRET,
+    scope: 'https://graph.microsoft.com/.default',
+  });
+
+  const tokenRes = await axios.post(
+    `https://login.microsoftonline.com/${msTenantId}/oauth2/v2.0/token`,
+    params.toString(),
+    { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } }
+  );
+  return tokenRes.data.access_token;
+}
+
+async function graphRequestAppOnly(tenantId, method, endpoint, data = null) {
+  const token = await getAppOnlyToken(tenantId);
+  const config = {
+    method,
+    url: `${GRAPH_BASE}${endpoint}`,
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+  };
+  if (data) config.data = data;
+  const response = await axios(config);
+  return response.data;
+}
+
 async function listSiteDrives(tenantId, siteId) {
-  return graphRequest(tenantId, 'GET', `/sites/${siteId}/drives?$select=id,name,driveType,webUrl,quota,createdDateTime`);
+  try {
+    return await graphRequest(tenantId, 'GET', `/sites/${siteId}/drives?$select=id,name,driveType,webUrl,quota,createdDateTime`);
+  } catch (err) {
+    if (err.response?.status === 403) {
+      return graphRequestAppOnly(tenantId, 'GET', `/sites/${siteId}/drives?$select=id,name,driveType,webUrl,quota,createdDateTime`);
+    }
+    throw err;
+  }
 }
 
 async function listDriveItems(tenantId, siteId, driveId, itemId = 'root') {
