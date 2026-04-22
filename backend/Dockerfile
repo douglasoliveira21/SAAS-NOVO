@@ -20,6 +20,7 @@ RUN apk add --no-cache \
 RUN curl -L https://github.com/PowerShell/PowerShell/releases/download/v7.4.6/powershell-7.4.6-linux-musl-x64.tar.gz -o /tmp/powershell.tar.gz \
     && mkdir -p /opt/powershell \
     && tar -xzf /tmp/powershell.tar.gz -C /opt/powershell \
+    && chmod +x /opt/powershell/pwsh \
     && ln -s /opt/powershell/pwsh /usr/local/bin/pwsh \
     && rm /tmp/powershell.tar.gz
 
