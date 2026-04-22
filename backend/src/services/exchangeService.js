@@ -8,7 +8,7 @@ const os = require('os');
  */
 function runPowerShell(scriptPath) {
   return new Promise((resolve, reject) => {
-    execFile('powershell.exe',
+    execFile('pwsh',
       ['-NonInteractive', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', scriptPath],
       { timeout: 90000, maxBuffer: 10 * 1024 * 1024 },
       (err, stdout, stderr) => {
