@@ -5,10 +5,6 @@ COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/src ./src
 COPY frontend/public ./public
-
-ARG REACT_APP_API_URL
-ENV REACT_APP_API_URL=$REACT_APP_API_URL
-
 RUN npm run build
 
 FROM nginx:alpine
@@ -21,5 +17,9 @@ RUN printf 'server {\n\
         try_files $uri $uri/ /index.html;\n\
     }\n\
 }\n' > /etc/nginx/conf.d/default.conf
+
+COPY frontend/docker-entrypoint.sh /docker-entrypoint-custom.sh
+RUN chmod +x /docker-entrypoint-custom.sh
+
 EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["/bin/sh", "-c", "/docker-entrypoint-custom.sh && nginx -g 'daemon off;'"]
