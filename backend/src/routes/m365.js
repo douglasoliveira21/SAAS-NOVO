@@ -628,6 +628,8 @@ router.get('/sharepoint/sites/:siteId/drives', async (req, res) => {
     const data = await graph.listSiteDrives(req.params.tenantId, req.params.siteId);
     res.json(data.value || []);
   } catch (err) {
+    const status = err.response?.status;
+    if (status === 403 || status === 404) return res.json([]);
     res.status(400).json({ error: err.message });
   }
 });
@@ -638,6 +640,8 @@ router.get('/sharepoint/sites/:siteId/drives/:driveId/items', async (req, res) =
     const data = await graph.listDriveItems(req.params.tenantId, req.params.siteId, req.params.driveId, itemId);
     res.json(data.value || []);
   } catch (err) {
+    const status = err.response?.status;
+    if (status === 403 || status === 404) return res.json([]);
     res.status(400).json({ error: err.message });
   }
 });
@@ -648,6 +652,8 @@ router.get('/sharepoint/drives/:driveId/items/:itemId/children', async (req, res
     const data = await graph.listFolderItems(req.params.tenantId, req.params.driveId, req.params.itemId);
     res.json(data.value || []);
   } catch (err) {
+    const status = err.response?.status;
+    if (status === 403 || status === 404) return res.json([]);
     res.status(400).json({ error: err.message });
   }
 });
@@ -658,6 +664,8 @@ router.get('/sharepoint/drives/:driveId/items/:itemId/folders', async (req, res)
     const data = await graph.listFolderItems(req.params.tenantId, req.params.driveId, req.params.itemId);
     res.json(data.value || []);
   } catch (err) {
+    const status = err.response?.status;
+    if (status === 403 || status === 404) return res.json([]);
     res.status(400).json({ error: err.message });
   }
 });
