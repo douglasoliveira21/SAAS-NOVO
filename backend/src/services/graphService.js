@@ -506,9 +506,13 @@ async function listDriveItems(tenantId, siteId, driveId, itemId = 'root') {
 
 // List ALL items (files + folders) with metadata
 async function listFolderItems(tenantId, driveId, itemId = 'root') {
-  return graphRequest(tenantId, 'GET',
-    `/drives/${driveId}/items/${itemId}/children?$select=id,name,folder,file,size,webUrl,createdDateTime,lastModifiedDateTime,createdBy,lastModifiedBy&$orderby=name`
-  );
+  const endpoint = `/drives/${driveId}/items/${itemId}/children?$select=id,name,folder,file,size,webUrl,createdDateTime,lastModifiedDateTime,createdBy,lastModifiedBy&$orderby=name`;
+  try {
+    return await graphRequest(tenantId, 'GET', endpoint);
+  } catch (err) {
+    if (err.response?.status === 403) return graphRequestAppOnly(tenantId, 'GET', endpoint);
+    throw err;
+  }
 }
 
 async function addSiteMember(tenantId, siteId, userId, role = 'read') {
@@ -519,7 +523,13 @@ async function addSiteMember(tenantId, siteId, userId, role = 'read') {
 }
 
 async function listSitePermissions(tenantId, siteId) {
-  return graphRequest(tenantId, 'GET', `/sites/${siteId}/permissions`);
+  const endpoint = `/sites/${siteId}/permissions`;
+  try {
+    return await graphRequest(tenantId, 'GET', endpoint);
+  } catch (err) {
+    if (err.response?.status === 403) return graphRequestAppOnly(tenantId, 'GET', endpoint);
+    throw err;
+  }
 }
 
 async function updateSitePermission(tenantId, siteId, permissionId, role) {
@@ -531,7 +541,13 @@ async function deleteSitePermission(tenantId, siteId, permissionId) {
 }
 
 async function listItemPermissions(tenantId, driveId, itemId) {
-  return graphRequest(tenantId, 'GET', `/drives/${driveId}/items/${itemId}/permissions`);
+  const endpoint = `/drives/${driveId}/items/${itemId}/permissions`;
+  try {
+    return await graphRequest(tenantId, 'GET', endpoint);
+  } catch (err) {
+    if (err.response?.status === 403) return graphRequestAppOnly(tenantId, 'GET', endpoint);
+    throw err;
+  }
 }
 
 async function addItemPermission(tenantId, driveId, itemId, userId, role) {
