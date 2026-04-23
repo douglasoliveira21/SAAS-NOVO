@@ -495,8 +495,27 @@ function computeHealthScore({ blocked, noLicense, mfaDisabled, licensesLow, lice
 }
 router.get('/licenses', async (req, res) => {
   try {
-    const data = await graph.listLicenses(req.params.tenantId);
-    res.json(data.value || []);
+    const [skusData, subsData] = await Promise.allSettled([
+      graph.listLicenses(req.params.tenantId),
+      graph.graphRequestPublic(req.params.tenantId, 'GET', '/directory/subscriptions'),
+    ]);
+
+    const skus = skusData.status === 'fulfilled' ? (skusData.value.value || []) : [];
+    const subs = subsData.status === 'fulfilled' ? (subsData.value.value || []) : [];
+
+    // Merge subscription expiry into each SKU by skuId
+    const subsBySkuId = {};
+    for (const sub of subs) {
+      if (sub.skuId) subsBySkuId[sub.skuId] = sub;
+    }
+
+    const merged = skus.map(sku => ({
+      ...sku,
+      nextLifecycleDateTime: subsBySkuId[sku.skuId]?.nextLifecycleDateTime || null,
+      subscriptionStatus: subsBySkuId[sku.skuId]?.status || null,
+    }));
+
+    res.json(merged);
   } catch (err) {
     res.status(400).json({ error: err.message });
   }

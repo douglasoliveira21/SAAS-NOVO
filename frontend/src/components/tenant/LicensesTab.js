@@ -62,12 +62,16 @@ export default function LicensesTab({ tenantId }) {
                 <th>Total</th>
                 <th>Usadas</th>
                 <th>Disponíveis</th>
+                <th>Vencimento</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody>
               {licenses.map(l => {
                 const available = l.prepaidUnits?.enabled - l.consumedUnits;
+                const expiry = l.nextLifecycleDateTime ? new Date(l.nextLifecycleDateTime) : null;
+                const daysLeft = expiry ? Math.ceil((expiry - Date.now()) / (1000 * 60 * 60 * 24)) : null;
+                const expiryColor = daysLeft === null ? '#64748b' : daysLeft <= 30 ? '#ef4444' : daysLeft <= 90 ? '#f59e0b' : '#10b981';
                 return (
                   <tr key={l.skuId}>
                     <td style={{ fontWeight: 500 }}>{friendlyName(l.skuPartNumber)}</td>
@@ -76,6 +80,14 @@ export default function LicensesTab({ tenantId }) {
                     <td>{l.consumedUnits}</td>
                     <td>
                       <span className={`badge ${available > 0 ? 'badge-green' : 'badge-red'}`}>{available}</span>
+                    </td>
+                    <td style={{ fontSize: 13, color: expiryColor }}>
+                      {expiry ? (
+                        <span title={`${daysLeft} dias restantes`}>
+                          {expiry.toLocaleDateString('pt-BR')}
+                          {daysLeft <= 90 && <span style={{ fontSize: 11, marginLeft: 6 }}>({daysLeft}d)</span>}
+                        </span>
+                      ) : <span style={{ color: '#475569' }}>—</span>}
                     </td>
                     <td>
                       <button className="btn btn-ghost btn-sm" onClick={() => setShowAssign(l)} disabled={available <= 0}>
