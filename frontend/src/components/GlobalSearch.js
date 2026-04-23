@@ -2,13 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Search, Users, UsersRound, Package, Building2, X, CheckCircle, XCircle, Loader } from 'lucide-react';
 import api from '../api/client';
-
-const LICENSE_NAMES = {
-  ENTERPRISEPACK: 'M365 E3', ENTERPRISEPREMIUM: 'M365 E5',
-  SPB: 'M365 Business Premium', O365_BUSINESS_ESSENTIALS: 'M365 Business Basic',
-  EXCHANGESTANDARD: 'Exchange Online P1',
-};
-const friendlyLicense = s => LICENSE_NAMES[s] || s;
+import { friendlyLicense } from '../utils/licenseNames';
 
 function useDebounce(value, delay) {
   const [debounced, setDebounced] = useState(value);

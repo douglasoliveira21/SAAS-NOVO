@@ -6,6 +6,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/client";
+import { friendlyLicense } from "../../utils/licenseNames";
 
 // ─── Operation definitions ────────────────────────────────────────────────────
 const OP_DEFS = [
@@ -50,13 +51,6 @@ const OP_DEFS = [
 
 const RISK_COLOR = { low: "#10b981", medium: "#f59e0b", high: "#ef4444" };
 const RISK_LABEL = { low: "Baixo", medium: "Médio", high: "Alto" };
-
-const LICENSE_NAMES = {
-  ENTERPRISEPACK: "M365 E3", ENTERPRISEPREMIUM: "M365 E5",
-  SPB: "M365 Business Premium", O365_BUSINESS_ESSENTIALS: "M365 Business Basic",
-  EXCHANGESTANDARD: "Exchange Online P1",
-};
-const friendlyLicense = s => LICENSE_NAMES[s] || s;
 
 // ─── Operation builder row ────────────────────────────────────────────────────
 function OpRow({ op, onRemove, licenses, groups }) {

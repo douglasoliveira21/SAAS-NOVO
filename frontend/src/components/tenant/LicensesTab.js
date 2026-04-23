@@ -2,18 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { Package, RefreshCw, Plus, Minus } from 'lucide-react';
 import toast from 'react-hot-toast';
 import api from '../../api/client';
-
-const LICENSE_NAMES = {
-  'ENTERPRISEPACK': 'Microsoft 365 E3',
-  'ENTERPRISEPREMIUM': 'Microsoft 365 E5',
-  'SPB': 'Microsoft 365 Business Premium',
-  'O365_BUSINESS_ESSENTIALS': 'Microsoft 365 Business Basic',
-  'EXCHANGESTANDARD': 'Exchange Online Plan 1',
-  'TEAMS_EXPLORATORY': 'Microsoft Teams Exploratory',
-};
+import { friendlyLicense } from '../../utils/licenseNames';
 
 function friendlyName(skuPartNumber) {
-  return LICENSE_NAMES[skuPartNumber] || skuPartNumber;
+  return friendlyLicense(skuPartNumber);
 }
 
 export default function LicensesTab({ tenantId }) {

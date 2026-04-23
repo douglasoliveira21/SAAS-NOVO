@@ -2,14 +2,7 @@
 import { X, User, Package, UsersRound, CheckCircle, ChevronRight, Eye, EyeOff, Loader, AlertCircle } from "lucide-react";
 import toast from "react-hot-toast";
 import api from "../../api/client";
-
-const LICENSE_NAMES = {
-  ENTERPRISEPACK: "Microsoft 365 E3", ENTERPRISEPREMIUM: "Microsoft 365 E5",
-  SPB: "Microsoft 365 Business Premium", O365_BUSINESS_ESSENTIALS: "Microsoft 365 Business Basic",
-  EXCHANGESTANDARD: "Exchange Online P1", TEAMS_EXPLORATORY: "Teams Exploratory",
-  STANDARDPACK: "Office 365 E1", ENTERPRISEWITHSCAL: "Office 365 E4",
-};
-const friendlyLicense = s => LICENSE_NAMES[s] || s;
+import { friendlyLicense } from "../../utils/licenseNames";
 
 // ─── Step indicator ───────────────────────────────────────────────────────────
 function StepBar({ steps, current }) {

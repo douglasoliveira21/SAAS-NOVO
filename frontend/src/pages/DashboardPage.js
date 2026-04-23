@@ -7,14 +7,9 @@ import {
 } from 'lucide-react';
 import api from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { friendlyLicense } from '../utils/licenseNames';
 
 // ─── helpers ────────────────────────────────────────────────────────────────
-const LICENSE_NAMES = {
-  ENTERPRISEPACK: 'M365 E3', ENTERPRISEPREMIUM: 'M365 E5',
-  SPB: 'M365 Business Premium', O365_BUSINESS_ESSENTIALS: 'M365 Business Basic',
-  EXCHANGESTANDARD: 'Exchange Online P1', TEAMS_EXPLORATORY: 'Teams Exploratory',
-};
-const friendlyLicense = s => LICENSE_NAMES[s] || s;
 
 function scoreColor(score) {
   if (score >= 80) return '#10b981';
