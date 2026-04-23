@@ -395,15 +395,19 @@ router.get('/health', async (req, res) => {
       ? (authMethodsRes.value.value || users)
       : users;
 
+    // Filter out external/guest users (#EXT# in UPN) from health monitoring
+    const internalUsers = users.filter(u => !u.userPrincipalName?.includes('#EXT#'));
+    const internalUsersWithSignIn = usersWithSignIn.filter(u => !u.userPrincipalName?.includes('#EXT#'));
+
     // ── Compute health alerts ──────────────────────────────────────────────
 
     // 1. Users without license (enabled accounts only)
-    const noLicense = users.filter(u =>
+    const noLicense = internalUsers.filter(u =>
       u.accountEnabled && (!u.assignedLicenses || u.assignedLicenses.length === 0)
     );
 
     // 2. Blocked accounts
-    const blocked = users.filter(u => !u.accountEnabled);
+    const blocked = internalUsers.filter(u => !u.accountEnabled);
 
     // 3. Licenses running low (< 10% available or < 5 seats)
     const licensesLow = licenses.filter(l => {
@@ -421,7 +425,7 @@ router.get('/health', async (req, res) => {
 
     // 5. Recent sign-in errors (users with signInActivity errorCode != 0 in last 7 days)
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    const signInErrors = usersWithSignIn.filter(u => {
+    const signInErrors = internalUsersWithSignIn.filter(u => {
       const activity = u.signInActivity;
       if (!activity) return false;
       const lastError = activity.lastNonInteractiveSignInDateTime || activity.lastSignInDateTime;
@@ -434,7 +438,7 @@ router.get('/health', async (req, res) => {
     let mfaDisabled = [];
     try {
       const mfaChecks = await Promise.allSettled(
-        users.filter(u => u.accountEnabled).slice(0, 30).map(async u => {
+        internalUsers.filter(u => u.accountEnabled).slice(0, 30).map(async u => {
           const methods = await graph.listAuthMethods(tenantId, u.id);
           const hasMfa = (methods.value || []).some(m =>
             m['@odata.type'] !== '#microsoft.graph.passwordAuthenticationMethod'
@@ -449,15 +453,15 @@ router.get('/health', async (req, res) => {
 
     res.json({
       summary: {
-        totalUsers: users.length,
-        activeUsers: users.filter(u => u.accountEnabled).length,
+        totalUsers: internalUsers.length,
+        activeUsers: internalUsers.filter(u => u.accountEnabled).length,
         blockedUsers: blocked.length,
         noLicenseUsers: noLicense.length,
         mfaDisabledUsers: mfaDisabled.length,
         licensesLow: licensesLow.length,
         licensesExhausted: licensesExhausted.length,
         signInErrors: signInErrors.length,
-        healthScore: computeHealthScore({ blocked, noLicense, mfaDisabled, licensesLow, licensesExhausted, total: users.length }),
+        healthScore: computeHealthScore({ blocked, noLicense, mfaDisabled, licensesLow, licensesExhausted, total: internalUsers.length }),
       },
       details: {
         noLicense: noLicense.map(u => ({ id: u.id, displayName: u.displayName, userPrincipalName: u.userPrincipalName })),
