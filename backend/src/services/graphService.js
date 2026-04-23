@@ -551,13 +551,21 @@ async function listItemPermissions(tenantId, driveId, itemId) {
 }
 
 async function addItemPermission(tenantId, driveId, itemId, userId, role) {
-  // Supports: read | write | owner (fullcontrol)
   const mappedRole = role === 'owner' ? 'owner' : role === 'write' ? 'write' : 'read';
+  // Resolve userId to UPN if it looks like a GUID
+  let recipient;
+  const isGuid = /^[0-9a-f-]{36}$/i.test(userId);
+  if (isGuid) {
+    const user = await graphRequest(tenantId, 'GET', `/users/${userId}?$select=userPrincipalName`);
+    recipient = { email: user.userPrincipalName };
+  } else {
+    recipient = { email: userId };
+  }
   return graphRequest(tenantId, 'POST', `/drives/${driveId}/items/${itemId}/invite`, {
     requireSignIn: true,
     sendInvitation: false,
     roles: [mappedRole],
-    recipients: [{ objectId: userId }],
+    recipients: [recipient],
   });
 }
 
