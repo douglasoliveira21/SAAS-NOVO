@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
-import { Loader, Clock, Eye, EyeOff, ShieldCheck, Users, Globe, BarChart3 } from 'lucide-react';
+import { Loader, Clock, Eye, EyeOff, ShieldCheck, Users, Globe, BarChart3, Shield } from 'lucide-react';
+import api from '../api/client';
 
 const FEATURES = [
   { icon: ShieldCheck, text: 'Gerenciamento seguro de múltiplos tenants' },
@@ -19,15 +20,36 @@ export default function LoginPage() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [twoFactor, setTwoFactor] = useState(null); // { tempToken }
+  const [code, setCode] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(form.email, form.password);
-      navigate('/');
+      const result = await login(form.email, form.password);
+      if (result?.requiresTwoFactor) {
+        setTwoFactor({ tempToken: result.tempToken });
+      } else {
+        navigate('/');
+      }
     } catch (err) {
       toast.error(err.response?.data?.error || 'Credenciais inválidas');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVerify2FA = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const res = await api.post('/auth/verify-2fa', { tempToken: twoFactor.tempToken, code });
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      window.location.href = '/';
+    } catch (err) {
+      toast.error(err.response?.data?.error || 'Código inválido ou expirado');
     } finally {
       setLoading(false);
     }
@@ -135,8 +157,60 @@ export default function LoginPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit}>
-          {/* Email */}
+        <form onSubmit={twoFactor ? handleVerify2FA : handleSubmit}>
+          {twoFactor ? (
+            /* ── 2FA verification ── */
+            <>
+              <div style={{ textAlign: 'center', marginBottom: 28 }}>
+                <div style={{ width: 56, height: 56, borderRadius: 14, background: '#1e2433', border: '1px solid #3b82f644', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+                  <Shield size={24} color="#3b82f6" />
+                </div>
+                <p style={{ fontSize: 14, color: '#94a3b8', lineHeight: 1.6 }}>
+                  Enviamos um código de 6 dígitos para o seu email.<br />
+                  Insira o código para continuar.
+                </p>
+              </div>
+              <div style={{ marginBottom: 28 }}>
+                <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#94a3b8', marginBottom: 8 }}>
+                  Código de verificação
+                </label>
+                <input
+                  type="text"
+                  required
+                  autoFocus
+                  maxLength={6}
+                  value={code}
+                  onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+                  placeholder="000000"
+                  style={{
+                    width: '100%', background: '#13151f',
+                    border: '1px solid #2d3748', borderRadius: 10,
+                    padding: '14px 16px', fontSize: 24, color: '#f1f5f9',
+                    outline: 'none', letterSpacing: 12, textAlign: 'center',
+                    fontFamily: 'Inter, sans-serif',
+                  }}
+                  onFocus={e => e.target.style.borderColor = '#3b82f6'}
+                  onBlur={e => e.target.style.borderColor = '#2d3748'}
+                />
+              </div>
+              <button type="submit" disabled={loading || code.length !== 6} style={{
+                width: '100%', padding: '13px 24px',
+                background: (loading || code.length !== 6) ? '#1e2433' : 'linear-gradient(135deg, #3b82f6, #6366f1)',
+                border: 'none', borderRadius: 10, cursor: (loading || code.length !== 6) ? 'not-allowed' : 'pointer',
+                fontSize: 15, fontWeight: 600, color: '#fff',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+                boxShadow: (loading || code.length !== 6) ? 'none' : '0 4px 20px #3b82f640',
+                fontFamily: 'Inter, sans-serif',
+              }}>
+                {loading ? <><Loader size={16} style={{ animation: 'spin 0.6s linear infinite' }} /> Verificando...</> : 'Verificar código'}
+              </button>
+              <button type="button" onClick={() => { setTwoFactor(null); setCode(''); }} style={{ width: '100%', marginTop: 12, background: 'none', border: 'none', color: '#64748b', fontSize: 13, cursor: 'pointer', padding: '8px' }}>
+                ← Voltar ao login
+              </button>
+            </>
+          ) : (
+            /* ── Normal login ── */
+            <>
           <div style={{ marginBottom: 20 }}>
             <label style={{ display: 'block', fontSize: 13, fontWeight: 500, color: '#94a3b8', marginBottom: 8 }}>
               Email
@@ -217,6 +291,8 @@ export default function LoginPage() {
               'Entrar na plataforma'
             )}
           </button>
+          </>
+          )}
         </form>
 
         {/* Footer */}
